@@ -1,0 +1,13 @@
+[package]
+name = "rust-patch-derive"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "1", features = ["parsing"] }
+quote = "1"
+proc-macro2 = "1"
+proc-macro-error = "1"

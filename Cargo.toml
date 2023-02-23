@@ -1,7 +1,6 @@
 [package]
 name = "rust-patch"
 authors = ["netthier <admin@netthier.net>"]
-license = "MIT OR Apache-2.0"
 description = "Patch structs with other structs"
 repository = "https://github.com/netthier/rust-patch"
 categories = ["no-std::no-alloc", "development-tools"]
@@ -15,6 +14,7 @@ members = [".", "rust-patch-derive"]
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
 
 [dev-dependencies]
 serde = { version = "1", features = ["derive"] }

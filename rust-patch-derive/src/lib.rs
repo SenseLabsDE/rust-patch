@@ -88,8 +88,8 @@ pub fn derive_patch(item: proc_macro::TokenStream) -> proc_macro::TokenStream {
             match content.to_string().as_str() {
                 "direct" => direct = true,
                 "as_option" => as_option = true,
-                _a => {
-                    abort!(span, "Unknown attribute {a}")
+                a => {
+                    abort!(span, "Unknown attribute `{}`", a)
                 }
             }
         }

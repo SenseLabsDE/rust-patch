@@ -1,10 +1,9 @@
-use proc_macro::TokenStream;
-use proc_macro2::{Literal, TokenTree};
+use proc_macro2::{Group, Literal, Span, TokenStream, TokenTree};
 use proc_macro_error::proc_macro_error;
 use proc_macro_error::{abort, abort_call_site};
 use quote::quote;
 use syn::parse::{Parse, ParseStream};
-use syn::{parse_macro_input, Attribute, Data, DataStruct, LitStr, Path, Token, Type, TypePath};
+use syn::{parse_macro_input, Attribute, Data, DataStruct, LitStr, Token, Type, TypePath};
 use syn::{DeriveInput, Fields};
 
 struct PatchAttr {
@@ -23,7 +22,7 @@ impl Parse for PatchAttr {
 
 #[proc_macro_derive(Patch, attributes(patch))]
 #[proc_macro_error]
-pub fn derive_patch(item: TokenStream) -> TokenStream {
+pub fn derive_patch(item: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(item as DeriveInput);
 
     let ident = input.ident;
@@ -55,7 +54,7 @@ pub fn derive_patch(item: TokenStream) -> TokenStream {
             == Some("patch")
         {
             let Ok(PatchAttr { path, ..}) = syn::parse2(tokens) else { abort!(&path, r#"Patch target must be specified in the form `#[patch = "path::to::Type"]`"#) };
-            let Ok(path) = syn::parse_str::<Path>(&path.value()) else { abort!(&path, "`{}` is not a valid path", path.value())};
+            let Ok(path) = parse_lit_str::<TypePath>(&path) else { abort!(&path, "`{}` is not a valid path", path.value())};
             targets.push(path);
         }
     }
@@ -95,5 +94,34 @@ pub fn derive_patch(item: TokenStream) -> TokenStream {
         )*
     };
 
-    TokenStream::from(output)
+    proc_macro::TokenStream::from(output)
+}
+
+// Taken from https://github.com/serde-rs/serde/blob/master/serde_derive/src/internals
+fn parse_lit_str<T>(s: &syn::LitStr) -> syn::parse::Result<T>
+where
+    T: Parse,
+{
+    let tokens = spanned_tokens(s)?;
+    syn::parse2(tokens)
+}
+
+fn spanned_tokens(s: &syn::LitStr) -> syn::parse::Result<TokenStream> {
+    let stream = syn::parse_str(&s.value())?;
+    Ok(respan(stream, s.span()))
+}
+
+fn respan(stream: TokenStream, span: Span) -> TokenStream {
+    stream
+        .into_iter()
+        .map(|token| respan_token(token, span))
+        .collect()
+}
+
+fn respan_token(mut token: TokenTree, span: Span) -> TokenTree {
+    if let TokenTree::Group(g) = &mut token {
+        *g = Group::new(g.delimiter(), respan(g.stream(), span));
+    }
+    token.set_span(span);
+    token
 }

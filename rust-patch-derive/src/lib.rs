@@ -1,10 +1,25 @@
 use proc_macro::TokenStream;
-use proc_macro2::{Ident, Literal, Span, TokenTree};
+use proc_macro2::{Literal, TokenTree};
 use proc_macro_error::proc_macro_error;
 use proc_macro_error::{abort, abort_call_site};
 use quote::quote;
-use syn::{parse_macro_input, Attribute, Data, DataStruct, Type, TypePath};
+use syn::parse::{Parse, ParseStream};
+use syn::{parse_macro_input, Attribute, Data, DataStruct, LitStr, Path, Token, Type, TypePath};
 use syn::{DeriveInput, Fields};
+
+struct PatchAttr {
+    _eq_token: Token![=],
+    path: LitStr,
+}
+
+impl Parse for PatchAttr {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(Self {
+            _eq_token: input.parse()?,
+            path: input.parse()?,
+        })
+    }
+}
 
 #[proc_macro_derive(Patch, attributes(patch))]
 #[proc_macro_error]
@@ -39,9 +54,9 @@ pub fn derive_patch(item: TokenStream) -> TokenStream {
             .as_deref()
             == Some("patch")
         {
-            let Some(TokenTree::Literal(l)) = tokens.into_iter().nth(1) else { abort_call_site!("Failed parsing patch target") };
-            let target = Ident::new(l.to_string().trim_matches('"'), Span::call_site());
-            targets.push(target);
+            let Ok(PatchAttr { path, ..}) = syn::parse2(tokens) else { abort!(&path, r#"Patch target must be specified in the form `#[patch = "path::to::Type"]`"#) };
+            let Ok(path) = syn::parse_str::<Path>(&path.value()) else { abort!(&path, "`{}` is not a valid path", path.value())};
+            targets.push(path);
         }
     }
 

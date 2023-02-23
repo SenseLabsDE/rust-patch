@@ -21,6 +21,7 @@ struct UnitItem;
 #[derive(Patch)]
 #[patch = "Item"]
 #[patch = "IdItem"]
+#[patch = "item::ModItem"]
 struct ItemPatch {
     data: Option<u32>,
 }
@@ -40,6 +41,13 @@ struct UnnamedPatch(Option<u32>);
 #[patch = "IdItem"]
 #[patch = "UnitItem"]
 struct UnitPatch;
+
+mod item {
+    #[derive(Copy, Clone, Debug, PartialEq)]
+    pub struct ModItem {
+        pub data: u32,
+    }
+}
 
 fn test_patch<T: PartialEq + Debug, P: Patch<T>>(data: T, patch: P, expected: T) {
     let res = patch.apply(data);
@@ -86,4 +94,13 @@ fn unnamed_struct() {
 #[test]
 fn unit_struct() {
     test_patch(UnitItem, UnitPatch, UnitItem);
+}
+
+#[test]
+fn patch_mod() {
+    test_patch(
+        item::ModItem { data: 10 },
+        ItemPatch { data: Some(5) },
+        item::ModItem { data: 5 },
+    )
 }

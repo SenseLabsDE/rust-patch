@@ -7,6 +7,7 @@ categories = ["no-std::no-alloc", "development-tools"]
 keywords = ["patch", "struct"]
 version.workspace = true
 edition.workspace = true
+license.workspace = true
 
 [workspace]
 members = [".", "rust-patch-derive"]
@@ -21,4 +22,4 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 [dependencies]
-rust-patch-derive = { path = "./rust-patch-derive" }
+rust-patch-derive = { version = "=0.1.0", path = "./rust-patch-derive" }

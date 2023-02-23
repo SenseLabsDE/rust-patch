@@ -1,6 +1,10 @@
 # rust-patch
 Patch structs with other structs
 
+[![Build status](https://github.com/netthier/rust-patch/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/netthier/rust-patch/actions/workflows/rust.yml)
+[![Crates.io](https://img.shields.io/crates/v/rust-patch)](https://crates.io/crates/rust-patch)
+[![Documentation](https://docs.rs/rust-patch/badge.svg)](https://docs.rs/rust-patch)
+
 `rust-patch` allows you to avoid boilerplate code when implementing partial updates of Rust structs.  
 Simply define a patch struct containing a subset of your fields, derive the `Patch` trait,
 and specify the original struct using the `#[patch]` attribute.  

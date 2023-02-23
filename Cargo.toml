@@ -13,11 +13,11 @@ keywords.workspace = true
 members = [".", "rust-patch-derive"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-authors = ["netthier <admin@netthier.net>"]
-repository = "https://github.com/netthier/rust-patch"
+authors = ["netthier <lp@senselabs.de>"]
+repository = "https://github.com/SenseLabsDE/rust-patch"
 categories = ["no-std", "no-std::no-alloc", "development-tools"]
 keywords = ["patch", "struct"]
 
@@ -26,4 +26,4 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 [dependencies]
-rust-patch-derive = { version = "=0.1.0", path = "./rust-patch-derive" }
+rust-patch-derive = { version = "=0.1.1", path = "./rust-patch-derive" }

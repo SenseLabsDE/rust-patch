@@ -12,6 +12,42 @@ Fields of a patch struct may either be of the same type `T` as in the original s
 In the latter case, the field to be patched will be left unchanged if the corresponding field in the patch is `None`
 
 This crate is `no_std` compatible.
+
+## Container attributes
+### `#[patch = "..."]`
+Set target struct to be patched
+```rust
+use rust_patch::Patch;
+struct Item { data: u32 }
+
+#[derive(Patch)]
+#[patch = "Item"]
+struct ItemPatch { data: Option<u32> }
+```
+## Field attributes
+### `#[patch(direct)]`
+By default, any fields in the patch of type `Option<T>` will be applied as such:
+```rust ignore
+if let Some(val) = patch.field {
+    target.field = val;
+} 
+```
+In some cases, e.g. when the field in the target struct is also an `Option`, this behavior is undesirable. 
+The `direct` attribute makes it so that the field is treated like any other `T`, meaning it will be applied like this:
+```rust ignore
+target.field = patch.field;
+```
+
+### `#[patch(as_option)]`
+This attribute also primarily changes the handling of `Option` types.
+Unlike with `direct` however, the original value will not be overwritten if the patch value is `None`.
+```rust ignore
+if patch.field.is_some() {
+    target.field = patch.field;
+}
+```
+
+## Example
 ```rust
 use rust_patch::Patch;
 use serde::Deserialize;

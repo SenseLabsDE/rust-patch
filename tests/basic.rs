@@ -1,5 +1,6 @@
-use rust_patch::Patch;
 use std::fmt::Debug;
+
+use rust_patch::Patch;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 struct Item {
@@ -17,6 +18,11 @@ struct UnnamedItem(u32);
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 struct UnitItem;
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+struct OptItem {
+    data: Option<u32>,
+}
 
 #[derive(Patch)]
 #[patch = "Item"]
@@ -41,6 +47,20 @@ struct UnnamedPatch(Option<u32>);
 #[patch = "IdItem"]
 #[patch = "UnitItem"]
 struct UnitPatch;
+
+#[derive(Patch)]
+#[patch = "OptItem"]
+struct DirectPatch {
+    #[patch(direct)]
+    data: Option<u32>,
+}
+
+#[derive(Patch)]
+#[patch = "OptItem"]
+struct OptPatch {
+    #[patch(as_option)]
+    data: Option<u32>,
+}
 
 mod item {
     #[derive(Copy, Clone, Debug, PartialEq)]
@@ -103,4 +123,32 @@ fn patch_mod() {
         ItemPatch { data: Some(5) },
         item::ModItem { data: 5 },
     )
+}
+
+#[test]
+fn patch_direct() {
+    test_patch(
+        OptItem { data: Some(1) },
+        DirectPatch { data: None },
+        OptItem { data: None },
+    );
+    test_patch(
+        OptItem { data: Some(1) },
+        DirectPatch { data: Some(0) },
+        OptItem { data: Some(0) },
+    );
+}
+
+#[test]
+fn patch_as_option() {
+    test_patch(
+        OptItem { data: Some(1) },
+        OptPatch { data: None },
+        OptItem { data: Some(1) },
+    );
+    test_patch(
+        OptItem { data: Some(1) },
+        OptPatch { data: Some(0) },
+        OptItem { data: Some(0) },
+    );
 }

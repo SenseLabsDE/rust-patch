@@ -1,10 +1,10 @@
 [package]
 name = "rust-patch"
+description = "Patch structs with other structs"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
-description.workspace = true
 repository.workspace = true
 categories.workspace = true
 keywords.workspace = true
@@ -17,9 +17,8 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 authors = ["netthier <admin@netthier.net>"]
-description = "Patch structs with other structs"
 repository = "https://github.com/netthier/rust-patch"
-categories = ["no-std::no-alloc", "development-tools"]
+categories = ["no-std", "no-std::no-alloc", "development-tools"]
 keywords = ["patch", "struct"]
 
 [dev-dependencies]

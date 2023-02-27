@@ -6,19 +6,19 @@ use syn::{
     parse::{Parse, ParseStream},
     parse_macro_input,
     spanned::Spanned,
-    token, Attribute, Data, DataStruct, DeriveInput, Fields, LitStr, Token, Type, TypePath,
+    token, Attribute, Data, DataStruct, DeriveInput, Fields, Token, Type, TypePath,
 };
 
 struct PatchEqAttr {
     _eq_token: Token![=],
-    path: LitStr,
+    path: TypePath,
 }
 
 impl Parse for PatchEqAttr {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             _eq_token: input.parse()?,
-            path: input.parse()?,
+            path: parse_lit_str(&input.parse()?)?,
         })
     }
 }
@@ -72,7 +72,6 @@ pub fn derive_patch(item: proc_macro::TokenStream) -> proc_macro::TokenStream {
     for patch_target in get_patch_attrs(input.attrs) {
         let span = patch_target.span();
         let Ok(PatchEqAttr { path, ..}) = syn::parse2(patch_target) else { abort!(span, r#"Patch target must be specified in the form `#[patch = "path::to::Type"]`"#) };
-        let Ok(path) = parse_lit_str::<TypePath>(&path) else { abort!(&path, "`{}` is not a valid path", path.value())};
         targets.push(path);
     }
 
@@ -84,7 +83,10 @@ pub fn derive_patch(item: proc_macro::TokenStream) -> proc_macro::TokenStream {
         let mut as_option = false;
         for attr in get_patch_attrs(attrs) {
             let span = attr.span();
-            let Ok(PatchParenAttr { content, .. }) = syn::parse2(attr) else { abort!(span, "Failed parsing field attribute") };
+            let content = match syn::parse2(attr) {
+                Ok(PatchParenAttr { content, .. }) => content,
+                Err(e) => abort!(span, "Failed parsing attribute: {}", e),
+            };
             match content.to_string().as_str() {
                 "direct" => direct = true,
                 "as_option" => as_option = true,

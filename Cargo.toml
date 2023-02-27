@@ -13,7 +13,7 @@ keywords.workspace = true
 members = [".", "rust-patch-derive"]
 
 [workspace.package]
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 authors = ["netthier <lp@senselabs.de>"]
@@ -26,4 +26,4 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 [dependencies]
-rust-patch-derive = { version = "=0.1.2", path = "./rust-patch-derive" }
+rust-patch-derive = { version = "=0.1.3", path = "./rust-patch-derive" }

@@ -25,27 +25,28 @@ struct Item { data: u32 }
 struct ItemPatch { data: Option<u32> }
 ```
 ## Field attributes
-### `#[patch(direct)]`
 By default, any fields in the patch of type `Option<T>` will be applied as such:
 ```rust ignore
 if let Some(val) = patch.field {
     target.field = val;
 } 
 ```
-In some cases, e.g. when the field in the target struct is also an `Option`, this behavior is undesirable. 
-The `direct` attribute makes it so that the field is treated like any other `T`, meaning it will be applied like this:
-```rust ignore
-target.field = patch.field;
-```
-
+this behavior can be changed by the following field attributes.
 ### `#[patch(as_option)]`
-This attribute also primarily changes the handling of `Option` types.
-Unlike with `direct` however, the original value will not be overwritten if the patch value is `None`.
+The `as_option` attribute allows patching structs where a field itself is already an `Option<T>` with the following logic:
 ```rust ignore
 if patch.field.is_some() {
     target.field = patch.field;
 }
 ```
+Applying this attribute to a field with a type without an `is_some()` method results in an error.
+
+### `#[patch(direct)]`
+The `direct` attribute makes it so that the field is treated like any other `T`, meaning it will be applied like this:
+```rust ignore
+target.field = patch.field;
+```
+Applying this attribute to a field where the type is not `Option<T>` is a no-op.
 
 ## Example
 ```rust
@@ -55,20 +56,20 @@ use serde::Deserialize;
 #[derive(PartialEq, Debug)]
 struct User {
     id: String,
-    display_name: String,
+    name: String,
     email: String,
 }
 
 #[derive(Deserialize, Patch)]
 #[patch = "User"]
 struct UserPatch {
-    display_name: Option<String>,
+    name: Option<String>,
     email: Option<String>,
 }
 
 let user = User {
     id: "6bf25b70-bffa-49e0-905b-2d2e608e3abd".to_string(),
-    display_name: "Max Mustermann".to_string(),
+    name: "Max Mustermann".to_string(),
     email: "max.mustermann@example.org".to_string(),
 };
 
@@ -85,7 +86,7 @@ assert_eq! {
     patched_user,
     User {
         id: "6bf25b70-bffa-49e0-905b-2d2e608e3abd".to_string(),
-        display_name: "Max Mustermann".to_string(),
+        name: "Max Mustermann".to_string(),
         email: "max.mustermann@example.com".to_string()
     }
 };

@@ -4,21 +4,21 @@ use serde::Deserialize;
 #[derive(PartialEq, Debug)]
 struct User {
     id: String,
-    display_name: String,
+    name: String,
     email: String,
 }
 
 #[derive(Deserialize, Patch)]
 #[patch = "User"]
 struct UserPatch {
-    display_name: Option<String>,
+    name: Option<String>,
     email: Option<String>,
 }
 
 fn main() {
     let user = User {
         id: "6bf25b70-bffa-49e0-905b-2d2e608e3abd".to_string(),
-        display_name: "Max Mustermann".to_string(),
+        name: "Max Mustermann".to_string(),
         email: "max.mustermann@example.org".to_string(),
     };
 
@@ -35,7 +35,7 @@ fn main() {
         patched_user,
         User {
             id: "6bf25b70-bffa-49e0-905b-2d2e608e3abd".to_string(),
-            display_name: "Max Mustermann".to_string(),
+            name: "Max Mustermann".to_string(),
             email: "max.mustermann@example.com".to_string()
         }
     };

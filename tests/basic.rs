@@ -25,40 +25,40 @@ struct OptItem {
 }
 
 #[derive(Patch)]
-#[patch = "Item"]
-#[patch = "IdItem"]
+#[patch(target = "Item")]
+#[patch(target = "IdItem")]
 #[patch = "item::ModItem"]
 struct ItemPatch {
     data: Option<u32>,
 }
 
 #[derive(Patch)]
-#[patch = "IdItem"]
+#[patch(target = "IdItem")]
 struct DataPatch {
     data: u32,
 }
 
 #[derive(Patch)]
-#[patch = "UnnamedItem"]
+#[patch(target = "UnnamedItem")]
 struct UnnamedPatch(Option<u32>);
 
 #[derive(Patch)]
-#[patch = "Item"]
-#[patch = "IdItem"]
-#[patch = "UnitItem"]
+#[patch(target = "Item")]
+#[patch(target = "IdItem")]
+#[patch(target = "UnitItem")]
 struct UnitPatch;
 
 #[derive(Patch)]
-#[patch = "OptItem"]
+#[patch(target = "OptItem")]
 struct DirectPatch {
     #[patch(direct)]
     data: Option<u32>,
 }
 
 #[derive(Patch)]
-#[patch = "OptItem"]
+#[patch(target = "OptItem")]
 struct OptPatch {
-    #[patch(as_option)]
+    #[patch(direct_some)]
     data: Option<u32>,
 }
 
@@ -140,7 +140,7 @@ fn patch_direct() {
 }
 
 #[test]
-fn patch_as_option() {
+fn patch_direct_some() {
     test_patch(
         OptItem { data: Some(1) },
         OptPatch { data: None },

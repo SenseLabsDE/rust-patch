@@ -1,79 +1,34 @@
+mod parsing;
+
+use darling::{ast::Data, FromDeriveInput};
 use proc_macro2::{Group, Ident, Literal, Span, TokenStream, TokenTree};
 use proc_macro_error::{abort, abort_call_site, proc_macro_error};
 use quote::quote;
-use syn::{
-    parenthesized,
-    parse::{Parse, ParseStream},
-    parse_macro_input,
-    spanned::Spanned,
-    token, Attribute, Data, DataStruct, DeriveInput, Fields, Token, Type, TypePath,
-};
+use syn::parse_macro_input;
 
-struct PatchEqAttr {
-    _eq_token: Token![=],
-    path: TypePath,
-}
+use crate::parsing::PatchStruct;
 
-impl Parse for PatchEqAttr {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        Ok(Self {
-            _eq_token: input.parse()?,
-            path: parse_lit_str(&input.parse()?)?,
-        })
-    }
-}
-
-struct PatchParenAttr {
-    _paren_token: token::Paren,
-    content: Ident,
-}
-
-impl Parse for PatchParenAttr {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let content;
-        Ok(Self {
-            _paren_token: parenthesized!(content in input),
-            content: content.parse()?,
-        })
-    }
-}
-
-#[proc_macro_derive(Patch, attributes(patch))]
 #[proc_macro_error]
+#[proc_macro_derive(Patch, attributes(patch))]
 pub fn derive_patch(item: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let input = parse_macro_input!(item as DeriveInput);
+    let input = match PatchStruct::from_derive_input(&parse_macro_input!(item as DeriveInput)) {
+        Ok(input) => input,
+        Err(e) => {
+            return e.write_errors().into();
+        }
+    };
+    dbg!(input);
 
-    let ident = input.ident;
-    let Data::Struct(DataStruct { fields, ..}) = input.data else { abort_call_site!("Patch can only be derived on structs") };
-    let fields = match fields {
-        Fields::Named(f) => f
-            .named
-            .into_pairs()
-            .map(|p| p.into_value())
-            .map(|f| (TokenTree::from(f.ident.unwrap()), f.ty, f.attrs))
-            .collect::<Vec<_>>(),
-        Fields::Unnamed(f) => f
-            .unnamed
-            .into_pairs()
-            .map(|p| p.into_value())
-            .enumerate()
-            .map(|(i, f)| {
-                (
-                    TokenTree::from(Literal::u32_unsuffixed(i as u32)),
-                    f.ty,
-                    f.attrs,
-                )
-            })
-            .collect::<Vec<_>>(),
-        Fields::Unit => Vec::new(),
+    let Data::Struct(struct_data) = input.data else {
+        abort!("rust-patch only supports structs");
     };
 
-    let mut targets = Vec::new();
-    for patch_target in get_patch_attrs(input.attrs) {
-        let span = patch_target.span();
-        let Ok(PatchEqAttr { path, ..}) = syn::parse2(patch_target) else { abort!(span, r#"Patch target must be specified in the form `#[patch = "path::to::Type"]`"#) };
-        targets.push(path);
+    let mut apply_sets = Vec::new();
+    for field in struct_data.fields {
+        
     }
+    todo!()
+    /*
 
     let mut apply_sets = Vec::new();
     for (name, ty, attrs) in fields {
@@ -84,7 +39,7 @@ pub fn derive_patch(item: proc_macro::TokenStream) -> proc_macro::TokenStream {
         for attr in get_patch_attrs(attrs) {
             let span = attr.span();
             let content = match syn::parse2(attr) {
-                Ok(PatchParenAttr { content, .. }) => content,
+                Ok(Meta::List(content)) => content,
                 Err(e) => abort!(span, "Failed parsing attribute: {}", e),
             };
             match content.to_string().as_str() {
@@ -135,22 +90,8 @@ pub fn derive_patch(item: proc_macro::TokenStream) -> proc_macro::TokenStream {
     };
 
     proc_macro::TokenStream::from(output)
-}
 
-fn get_patch_attrs(attrs: Vec<Attribute>) -> Vec<TokenStream> {
-    let mut result = Vec::new();
-    for Attribute { path, tokens, .. } in attrs {
-        if path
-            .segments
-            .first()
-            .map(|e| e.ident.to_string())
-            .as_deref()
-            == Some("patch")
-        {
-            result.push(tokens);
-        }
-    }
-    result
+     */
 }
 
 // Taken from https://github.com/serde-rs/serde/blob/master/serde_derive/src/internals

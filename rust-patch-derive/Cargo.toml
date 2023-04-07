@@ -13,7 +13,8 @@ keywords.workspace = true
 proc-macro = true
 
 [dependencies]
-syn = { version = "2", features = ["parsing"] }
+syn = { version = "1", features = ["parsing"] }
+darling = "0.14"
 quote = "1"
 proc-macro2 = "1"
 proc-macro-error = "1"
